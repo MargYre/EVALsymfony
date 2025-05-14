@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Parcours{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Mes Parcours</h1>
+            {% if 'ROLE_CONSEILLER' in app.user.roles %}
+                <a href="{{ path('app_parcours_create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Créer un parcours
+                </a>
+            {% endif %}
+        </div>
+        
+        {% if parcours is empty %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Vous n'avez pas encore de parcours associé.
+            </div>
+        {% else %}
+            <div class="row">
+                {% for p in parcours %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ p.objet }}</h5>
+                                <p class="card-text">{{ p.description|slice(0, 100) }}...</p>
+                                <a href="{{ path('app_parcours_show', {'id': p.id}) }}" class="btn btn-primary">
+                                    Voir les étapes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-around">
+            <a href="{{ path('app_message') }}" class="btn btn-secondary">
+                <i class="fas fa-envelope"></i> Messagerie
+            </a>
+            <a href="{{ path('app_ressource') }}" class="btn btn-secondary">
+                <i class="fas fa-book"></i> Ressources
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
