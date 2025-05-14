@@ -46,4 +46,36 @@ class RessourceController extends AbstractController
             'form' => $form,
         ]);
     }
+    
+    #[Route('/{id}/edit', name: 'app_ressource_edit')]
+    #[IsGranted('ROLE_CONSEILLER')]
+    public function edit(Request $request, Ressource $ressource, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(RessourceTypeForm::class, $ressource);
+        $form->handleRequest($request);
+        
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Ressource modifiée avec succès');
+            return $this->redirectToRoute('app_ressource');
+        }
+        
+        return $this->render('ressource/edit.html.twig', [
+            'form' => $form,
+            'ressource' => $ressource,
+        ]);
+    }
+    
+    #[Route('/{id}/delete', name: 'app_ressource_delete', methods: ['POST'])]
+    #[IsGranted('ROLE_CONSEILLER')]
+    public function delete(Request $request, Ressource $ressource, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$ressource->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($ressource);
+            $entityManager->flush();
+            $this->addFlash('success', 'Ressource supprimée avec succès');
+        }
+        
+        return $this->redirectToRoute('app_ressource');
+    }
 }

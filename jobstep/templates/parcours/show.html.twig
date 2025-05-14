@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parcours.objet }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-4">
+            <h1>{{ parcours.objet }}</h1>
+            <p class="text-muted">{{ parcours.description }}</p>
+            
+            {# Barre de progression #}
+            {% set etapes_completees = 0 %}
+            {% for etape in etapes %}
+                {% set a_rendu = false %}
+                {% for rendu in etape.rendus %}
+                    {% if rendu.user == app.user %}
+                        {% set a_rendu = true %}
+                        {% set etapes_completees = etapes_completees + 1 %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            
+            {% set progression = (etapes_completees / etapes|length * 100)|round %}
+            
+            <div class="progress mb-4" style="height: 25px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ progression }}%;" aria-valuenow="{{ progression }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ progression }}% complété
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for etape in etapes %}
+                <div class="col-md-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Étape {{ etape.position }} : {{ etape.descriptif }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>{{ etape.consignes }}</p>
+                            
+                            {# Ressources associées #}
+                            {% if etape.ressources is not empty %}
+                                <h6>Ressources :</h6>
+                                <ul class="list-group mb-3">
+                                    {% for ressource in etape.ressources %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong>{{ ressource.intitule }}</strong>
+                                                <small class="text-muted">({{ ressource.support }})</small>
+                                            </div>
+                                            {% if ressource.url %}
+                                                <a href="{{ ressource.url }}" target="_blank" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-download"></i> Télécharger
+                                                </a>
+                                            {% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            
+                            {# Rendus d'activité #}
+                            <h6>Rendu d'activité :</h6>
+                            {% set mon_dernier_rendu = null %}
+                            {% for rendu in etape.rendus %}
+                                {% if rendu.user == app.user %}
+                                    {% set mon_dernier_rendu = rendu %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if mon_dernier_rendu %}
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle"></i> 
+                                    Rendu déposé le {{ mon_dernier_rendu.dateHeure|date('d/m/Y à H:i') }}
+                                    <a href="{{ mon_dernier_rendu.url }}" target="_blank" class="btn btn-sm btn-success ms-2">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> Aucun rendu déposé
+                                </div>
+                            {% endif %}
+                            
+                            {# Formulaire d'upload #}
+                            <form action="{{ path('app_parcours_upload_rendu', {'id': parcours.id, 'etapeId': etape.id}) }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <input type="file" name="file" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-upload"></i> Déposer un rendu
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ path('app_parcours') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour aux parcours
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
