@@ -23,6 +23,14 @@ class Message
     #[ORM\Column]
     private ?\DateTime $dateHeure = null;
 
+    #[ORM\ManyToOne(inversedBy: 'messagesEnvoyes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $emetteur = null;
+
+    #[ORM\ManyToOne(inversedBy: 'messagesRecus')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $receveur = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -60,6 +68,30 @@ class Message
     public function setDateHeure(\DateTime $dateHeure): static
     {
         $this->dateHeure = $dateHeure;
+
+        return $this;
+    }
+
+    public function getEmetteur(): ?User
+    {
+        return $this->emetteur;
+    }
+
+    public function setEmetteur(?User $emetteur): static
+    {
+        $this->emetteur = $emetteur;
+
+        return $this;
+    }
+
+    public function getReceveur(): ?User
+    {
+        return $this->receveur;
+    }
+
+    public function setReceveur(?User $receveur): static
+    {
+        $this->receveur = $receveur;
 
         return $this;
     }

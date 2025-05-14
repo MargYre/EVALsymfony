@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\EtapeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -22,6 +24,28 @@ class Etape
 
     #[ORM\Column]
     private ?int $position = null;
+
+    #[ORM\ManyToOne(inversedBy: 'etapes')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Parcours $parcours = null;
+
+    /**
+     * @var Collection<int, Ressource>
+     */
+    #[ORM\ManyToMany(targetEntity: Ressource::class, inversedBy: 'etapes')]
+    private Collection $ressources;
+
+    /**
+     * @var Collection<int, Rendu>
+     */
+    #[ORM\OneToMany(targetEntity: Rendu::class, mappedBy: 'etape', orphanRemoval: true)]
+    private Collection $rendus;
+
+    public function __construct()
+    {
+        $this->ressources = new ArrayCollection();
+        $this->rendus = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -60,6 +84,72 @@ class Etape
     public function setPosition(int $position): static
     {
         $this->position = $position;
+
+        return $this;
+    }
+
+    public function getParcours(): ?Parcours
+    {
+        return $this->parcours;
+    }
+
+    public function setParcours(?Parcours $parcours): static
+    {
+        $this->parcours = $parcours;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ressource>
+     */
+    public function getRessources(): Collection
+    {
+        return $this->ressources;
+    }
+
+    public function addRessource(Ressource $ressource): static
+    {
+        if (!$this->ressources->contains($ressource)) {
+            $this->ressources->add($ressource);
+        }
+
+        return $this;
+    }
+
+    public function removeRessource(Ressource $ressource): static
+    {
+        $this->ressources->removeElement($ressource);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Rendu>
+     */
+    public function getRendus(): Collection
+    {
+        return $this->rendus;
+    }
+
+    public function addRendu(Rendu $rendu): static
+    {
+        if (!$this->rendus->contains($rendu)) {
+            $this->rendus->add($rendu);
+            $rendu->setEtape($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRendu(Rendu $rendu): static
+    {
+        if ($this->rendus->removeElement($rendu)) {
+            // set the owning side to null (unless already changed)
+            if ($rendu->getEtape() === $this) {
+                $rendu->setEtape(null);
+            }
+        }
 
         return $this;
     }

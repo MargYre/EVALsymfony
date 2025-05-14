@@ -19,6 +19,14 @@ class Rendu
     #[ORM\Column]
     private ?\DateTime $dateHeure = null;
 
+    #[ORM\ManyToOne(inversedBy: 'rendus')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Etape $etape = null;
+
+    #[ORM\ManyToOne(inversedBy: 'rendus')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $user = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -44,6 +52,30 @@ class Rendu
     public function setDateHeure(\DateTime $dateHeure): static
     {
         $this->dateHeure = $dateHeure;
+
+        return $this;
+    }
+
+    public function getEtape(): ?Etape
+    {
+        return $this->etape;
+    }
+
+    public function setEtape(?Etape $etape): static
+    {
+        $this->etape = $etape;
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
 
         return $this;
     }

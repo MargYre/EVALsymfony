@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ParcoursRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -19,6 +21,24 @@ class Parcours
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'parcours')]
+    private Collection $users;
+
+    /**
+     * @var Collection<int, Etape>
+     */
+    #[ORM\OneToMany(targetEntity: Etape::class, mappedBy: 'parcours', orphanRemoval: true)]
+    private Collection $etapes;
+
+    public function __construct()
+    {
+        $this->users = new ArrayCollection();
+        $this->etapes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -45,6 +65,63 @@ class Parcours
     public function setDescription(string $description): static
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, User>
+     */
+    public function getUsers(): Collection
+    {
+        return $this->users;
+    }
+
+    public function addUser(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+            $user->addParcour($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(User $user): static
+    {
+        if ($this->users->removeElement($user)) {
+            $user->removeParcour($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Etape>
+     */
+    public function getEtapes(): Collection
+    {
+        return $this->etapes;
+    }
+
+    public function addEtape(Etape $etape): static
+    {
+        if (!$this->etapes->contains($etape)) {
+            $this->etapes->add($etape);
+            $etape->setParcours($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEtape(Etape $etape): static
+    {
+        if ($this->etapes->removeElement($etape)) {
+            // set the owning side to null (unless already changed)
+            if ($etape->getParcours() === $this) {
+                $etape->setParcours(null);
+            }
+        }
 
         return $this;
     }

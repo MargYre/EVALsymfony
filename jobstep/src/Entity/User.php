@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -39,6 +41,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 20)]
     private ?string $role = 'Candidat';
+
+    /**
+     * @var Collection<int, Message>
+     */
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'emetteur')]
+    private Collection $messagesEnvoyes;
+
+    /**
+     * @var Collection<int, Message>
+     */
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'receveur')]
+    private Collection $messagesRecus;
+
+    /**
+     * @var Collection<int, Parcours>
+     */
+    #[ORM\ManyToMany(targetEntity: Parcours::class, inversedBy: 'users')]
+    private Collection $parcours;
+
+    public function __construct()
+    {
+        $this->messagesEnvoyes = new ArrayCollection();
+        $this->messagesRecus = new ArrayCollection();
+        $this->parcours = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -113,18 +140,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
-    public function getNom(): ?string
-    {
-        return $this->nom;
-    }
-
-    public function setNom(string $nom): static
-    {
-        $this->nom = $nom;
-
-        return $this;
-    }
-
     public function getPrenom(): ?string
     {
         return $this->prenom;
@@ -145,6 +160,102 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRole(string $role): static
     {
         $this->role = $role;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessagesEnvoyes(): Collection
+    {
+        return $this->messagesEnvoyes;
+    }
+
+    public function addMessagesEnvoye(Message $messagesEnvoye): static
+    {
+        if (!$this->messagesEnvoyes->contains($messagesEnvoye)) {
+            $this->messagesEnvoyes->add($messagesEnvoye);
+            $messagesEnvoye->setEmetteur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesEnvoye(Message $messagesEnvoye): static
+    {
+        if ($this->messagesEnvoyes->removeElement($messagesEnvoye)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesEnvoye->getEmetteur() === $this) {
+                $messagesEnvoye->setEmetteur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessagesRecus(): Collection
+    {
+        return $this->messagesRecus;
+    }
+
+    public function addMessagesRecu(Message $messagesRecu): static
+    {
+        if (!$this->messagesRecus->contains($messagesRecu)) {
+            $this->messagesRecus->add($messagesRecu);
+            $messagesRecu->setReceveur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessagesRecu(Message $messagesRecu): static
+    {
+        if ($this->messagesRecus->removeElement($messagesRecu)) {
+            // set the owning side to null (unless already changed)
+            if ($messagesRecu->getReceveur() === $this) {
+                $messagesRecu->setReceveur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Parcours>
+     */
+    public function getParcours(): Collection
+    {
+        return $this->parcours;
+    }
+
+    public function addParcour(Parcours $parcour): static
+    {
+        if (!$this->parcours->contains($parcour)) {
+            $this->parcours->add($parcour);
+        }
+
+        return $this;
+    }
+
+    public function removeParcour(Parcours $parcour): static
+    {
+        $this->parcours->removeElement($parcour);
+
+        return $this;
+    }
+
+    public function getNo(): ?string
+    {
+        return $this->no;
+    }
+
+    public function setNo(string $no): static
+    {
+        $this->no = $no;
 
         return $this;
     }

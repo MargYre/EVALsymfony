@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\RessourceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -28,6 +30,17 @@ class Ressource
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $url = null;
+
+    /**
+     * @var Collection<int, Etape>
+     */
+    #[ORM\ManyToMany(targetEntity: Etape::class, mappedBy: 'ressources')]
+    private Collection $etapes;
+
+    public function __construct()
+    {
+        $this->etapes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -90,6 +103,33 @@ class Ressource
     public function setUrl(?string $url): static
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Etape>
+     */
+    public function getEtapes(): Collection
+    {
+        return $this->etapes;
+    }
+
+    public function addEtape(Etape $etape): static
+    {
+        if (!$this->etapes->contains($etape)) {
+            $this->etapes->add($etape);
+            $etape->addRessource($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEtape(Etape $etape): static
+    {
+        if ($this->etapes->removeElement($etape)) {
+            $etape->removeRessource($this);
+        }
 
         return $this;
     }
